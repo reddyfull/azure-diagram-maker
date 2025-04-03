@@ -1,0 +1,47 @@
+2025-04-03 13:35:07,904 - __main__ - INFO - Starting MongoDB connection test...
+2025-04-03 13:35:07,904 - __main__ - INFO - Connecting to MongoDB: mongodb+srv://admin:[PASSWORD]@sridraw.rpkmj.mongodb.net/?retryWrites=true&w=majority&appName=sridraw
+2025-04-03 13:35:07,904 - __main__ - INFO - Creating MongoDB client...
+2025-04-03 13:35:08,055 - __main__ - INFO - Sending ping command...
+2025-04-03 13:35:08,301 - __main__ - ERROR - Error in MongoDB test: bad auth : Authentication failed., full error: {'ok': 0, 'errmsg': 'bad auth : Authentication failed.', 'code': 8000, 'codeName': 'AtlasError'}
+2025-04-03 13:35:08,303 - __main__ - ERROR - Traceback (most recent call last):
+  File "/Users/sritadip/Documents/draw/server/direct_mongo_upload.py", line 77, in main
+    client.admin.command('ping')
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/_csot.py", line 107, in csot_wrapper
+    return func(self, *args, **kwargs)
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/database.py", line 890, in command
+    with self.__client._conn_for_reads(read_preference, session) as (
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/mongo_client.py", line 1330, in _conn_from_server
+    with self._checkout(server, session) as conn:
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/mongo_client.py", line 1252, in _checkout
+    with server.checkout(handler=err_handler) as conn:
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/contextlib.py", line 135, in __enter__
+    return next(self.gen)
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/pool.py", line 1637, in checkout
+    conn = self._get_conn(handler=handler)
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/pool.py", line 1756, in _get_conn
+    conn = self.connect(handler=handler)
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/pool.py", line 1607, in connect
+    conn.authenticate()
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/pool.py", line 1078, in authenticate
+    auth.authenticate(creds, self, reauthenticate=reauthenticate)
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/auth.py", line 625, in authenticate
+    auth_func(credentials, conn)
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/auth.py", line 530, in _authenticate_default
+    return _authenticate_scram(credentials, conn, "SCRAM-SHA-1")
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/auth.py", line 257, in _authenticate_scram
+    res = conn.command(source, cmd)
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/helpers.py", line 322, in inner
+    return func(*args, **kwargs)
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/pool.py", line 968, in command
+    return command(
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/network.py", line 192, in command
+    helpers._check_command_response(
+  File "/Users/sritadip/.pyenv/versions/3.10.12/lib/python3.10/site-packages/pymongo/helpers.py", line 230, in _check_command_response
+    raise OperationFailure(errmsg, code, response, max_wire_version)
+pymongo.errors.OperationFailure: bad auth : Authentication failed., full error: {'ok': 0, 'errmsg': 'bad auth : Authentication failed.', 'code': 8000, 'codeName': 'AtlasError'}
+
+2025-04-03 13:35:08,303 - __main__ - ERROR - MongoDB test failed!

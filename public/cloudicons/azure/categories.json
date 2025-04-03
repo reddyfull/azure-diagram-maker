@@ -1,0 +1,19 @@
+{
+  "categories": [
+    {
+      "name": "Compute",
+      "displayName": "Compute Services",
+      "description": "Virtual machines, containers, kubernetes, and functions"
+    },
+    {
+      "name": "Storage",
+      "displayName": "Storage Services",
+      "description": "Blob storage, file storage, and disks"
+    },
+    {
+      "name": "Networking",
+      "displayName": "Networking Services",
+      "description": "Virtual networks, load balancers, and firewalls"
+    }
+  ]
+} 

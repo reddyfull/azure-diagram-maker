@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+</head>
+<body>
+    <h1>Test Page</h1>
+    <p>If you can see this, the web server is working!</p>
+    
+    <script>
+        // Test API call to our backend
+        fetch('http://localhost:3002/api/capabilities')
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.createElement('div');
+                resultDiv.innerHTML = `<h2>API Response:</h2><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                document.body.appendChild(resultDiv);
+            })
+            .catch(error => {
+                const errorDiv = document.createElement('div');
+                errorDiv.innerHTML = `<h2>Error:</h2><pre>${error}</pre>`;
+                document.body.appendChild(errorDiv);
+            });
+    </script>
+</body>
+</html> 

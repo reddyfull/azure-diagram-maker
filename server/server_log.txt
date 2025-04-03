@@ -1,0 +1,53 @@
+2025-04-03 11:20:48,805 - __main__ - INFO - Trying to connect to MongoDB Atlas...
+2025-04-03 11:20:48,805 - mongodb_client - INFO - Loading environment variables from /Users/sritadip/Documents/draw/server/.env
+2025-04-03 11:20:48,807 - mongodb_client - INFO - Connecting to MongoDB: mongodb+srv://[username]:[password]@sridraw.rpkmj.mongodb.net/?retryWrites=true&w=majority&appName=sridraw
+2025-04-03 11:20:48,807 - mongodb_client - INFO - Creating MongoDB client...
+2025-04-03 11:20:48,948 - mongodb_client - INFO - Sending ping command...
+2025-04-03 11:20:49,979 - mongodb_client - INFO - Successfully connected to MongoDB Atlas!
+2025-04-03 11:20:49,979 - mongodb_client - INFO - Using database: azure_diagram_maker
+2025-04-03 11:20:49,998 - mongodb_client - INFO - Collections in database: ['test']
+2025-04-03 11:20:49,998 - __main__ - INFO - MongoDB initialized successfully!
+2025-04-03 11:20:50,001 - __main__ - INFO - Using GCS credentials from /Users/sritadip/Documents/draw/server/../gcs-key.json
+2025-04-03 11:20:50,019 - __main__ - INFO - Connected to GCS with project: gen-lang-client-0452237601
+2025-04-03 11:20:50,496 - __main__ - INFO - Successfully wrote test file to GCS: https://storage.googleapis.com/aiicons/test-permissions.txt
+2025-04-03 11:20:50,697 - __main__ - INFO - Successfully deleted test file from GCS
+2025-04-03 11:20:50,697 - __main__ - INFO - Google Cloud Storage initialized with bucket: aiicons
+2025-04-03 11:20:50,697 - __main__ - INFO - Local storage directory initialized at: /Users/sritadip/Documents/draw/server/../public/cloudicons
+2025-04-03 11:20:50,742 - __main__ - INFO - Model Context Protocol API Server running on port 3002
+2025-04-03 11:20:50,742 - __main__ - INFO - Accepting requests from: http://localhost:8080
+2025-04-03 11:20:50,743 - __main__ - INFO - -------------------------------------------------------------------------
+2025-04-03 11:20:50,743 - __main__ - INFO - MONGODB ATLAS CONNECTED - Using MongoDB for configuration and storage
+2025-04-03 11:20:50,743 - __main__ - INFO - -------------------------------------------------------------------------
+ * Serving Flask app 'upload' (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: on
+2025-04-03 11:20:50,772 - werkzeug - WARNING -  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-04-03 11:20:50,776 - werkzeug - INFO -  * Running on http://192.168.1.232:3002/ (Press CTRL+C to quit)
+2025-04-03 11:20:50,779 - werkzeug - INFO -  * Restarting with stat
+2025-04-03 11:20:52,645 - __main__ - INFO - Trying to connect to MongoDB Atlas...
+2025-04-03 11:20:52,645 - mongodb_client - INFO - Loading environment variables from /Users/sritadip/Documents/draw/server/.env
+2025-04-03 11:20:52,650 - mongodb_client - INFO - Connecting to MongoDB: mongodb+srv://[username]:[password]@sridraw.rpkmj.mongodb.net/?retryWrites=true&w=majority&appName=sridraw
+2025-04-03 11:20:52,650 - mongodb_client - INFO - Creating MongoDB client...
+2025-04-03 11:20:52,772 - mongodb_client - INFO - Sending ping command...
+2025-04-03 11:20:53,233 - mongodb_client - INFO - Successfully connected to MongoDB Atlas!
+2025-04-03 11:20:53,251 - mongodb_client - INFO - Using database: azure_diagram_maker
+2025-04-03 11:20:53,284 - mongodb_client - INFO - Collections in database: ['test']
+2025-04-03 11:20:53,284 - __main__ - INFO - MongoDB initialized successfully!
+2025-04-03 11:20:53,288 - __main__ - INFO - Using GCS credentials from /Users/sritadip/Documents/draw/server/../gcs-key.json
+2025-04-03 11:20:53,338 - __main__ - INFO - Connected to GCS with project: gen-lang-client-0452237601
+2025-04-03 11:20:53,944 - __main__ - INFO - Successfully wrote test file to GCS: https://storage.googleapis.com/aiicons/test-permissions.txt
+2025-04-03 11:20:54,134 - __main__ - INFO - Successfully deleted test file from GCS
+2025-04-03 11:20:54,135 - __main__ - INFO - Google Cloud Storage initialized with bucket: aiicons
+2025-04-03 11:20:54,135 - __main__ - INFO - Local storage directory initialized at: /Users/sritadip/Documents/draw/server/../public/cloudicons
+2025-04-03 11:20:54,145 - __main__ - INFO - Model Context Protocol API Server running on port 3002
+2025-04-03 11:20:54,145 - __main__ - INFO - Accepting requests from: http://localhost:8080
+2025-04-03 11:20:54,146 - __main__ - INFO - -------------------------------------------------------------------------
+2025-04-03 11:20:54,146 - __main__ - INFO - MONGODB ATLAS CONNECTED - Using MongoDB for configuration and storage
+2025-04-03 11:20:54,146 - __main__ - INFO - -------------------------------------------------------------------------
+2025-04-03 11:20:54,165 - werkzeug - WARNING -  * Debugger is active!
+2025-04-03 11:20:54,222 - werkzeug - INFO -  * Debugger PIN: 111-586-509
+2025-04-03 11:20:54,989 - __main__ - INFO - Capabilities endpoint called
+2025-04-03 11:20:54,991 - werkzeug - INFO - 127.0.0.1 - - [03/Apr/2025 11:20:54] "GET /api/capabilities HTTP/1.1" 200 -

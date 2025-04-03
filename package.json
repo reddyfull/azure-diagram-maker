@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "npx vite",
     "server": "NODE_OPTIONS=--openssl-legacy-provider npx nodemon /Users/sritadip/Documents/draw/azure-diagram-maker/server/server.js --exec node",
+    "server:python": "cd server && python upload.py",
     "dev:all": "npx concurrently \"npm run dev\" \"npm run server\"",
+    "dev:python": "npx concurrently \"npm run dev\" \"npm run server:python\"",
     "build": "npx vite build",
     "build:dev": "npx vite build --mode development",
     "lint": "eslint .",

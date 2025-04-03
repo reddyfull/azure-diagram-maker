@@ -26,38 +26,30 @@ logger = logging.getLogger(__name__)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
-# Define mongodb_initialized at the module level - disabled due to auth issues
-mongodb_initialized = False
-mongo_db = None
-
-# Initialize MongoDB
+# Try to import MongoDB client and initialize the connection
 try:
-    from mongodb_client import get_db
+    from mongodb_client import initialize_mongodb, get_db
+    mongodb_initialized = initialize_mongodb()
     
-    # Try to get the database connection
-    mongo_db = get_db()
-    if mongo_db:
-        mongodb_initialized = True
-        logger.info("Successfully connected to MongoDB using client module")
-    else:
-        # Try direct connection as fallback
+    # If MongoDB isn't initialized, try one more time with hardcoded credentials
+    if not mongodb_initialized:
         logger.info("Trying direct MongoDB connection...")
-        try:
-            from pymongo import MongoClient
-            from pymongo.server_api import ServerApi
-            
-            mongo_client = MongoClient(
-                "mongodb+srv://srinisona:SaiKalika1209@sridraw.rpkmj.mongodb.net/?retryWrites=true&w=majority&appName=sridraw",
-                server_api=ServerApi('1')
-            )
-            mongo_client.admin.command('ping')
-            mongo_db = mongo_client["azure_diagram_maker"]
-            mongodb_initialized = True
-            logger.info("Direct MongoDB connection successful!")
-        except Exception as e:
-            logger.error(f"Direct MongoDB connection failed: {str(e)}")
+        from pymongo import MongoClient
+        from pymongo.server_api import ServerApi
+        
+        mongo_client = MongoClient(
+            "mongodb+srv://srinisona:SaiKalika1209@sridraw.rpkmj.mongodb.net/?retryWrites=true&w=majority&appName=sridraw",
+            server_api=ServerApi('1')
+        )
+        mongo_client.admin.command('ping')
+        db = mongo_client["azure_diagram_maker"]
+        mongodb_initialized = True
+        logger.info("Direct MongoDB connection successful!")
+    
+    logger.info(f"MongoDB initialized: {mongodb_initialized}")
 except Exception as e:
     logger.error(f"MongoDB initialization error: {str(e)}")
+    mongodb_initialized = False
     logger.warning("MongoDB integration disabled - using local storage only")
 
 app = Flask(__name__)
@@ -272,26 +264,28 @@ def upload_icons():
                             
                             # Try to save to MongoDB if available
                             try:
-                                if mongodb_initialized and mongo_db:
-                                    icons_collection = mongo_db.icons
-                                    
-                                    # Check if the icon already exists
-                                    existing_icon = icons_collection.find_one({
-                                        "provider": provider,
-                                        "filename": file
-                                    })
-                                    
-                                    if existing_icon:
-                                        # Update existing icon
-                                        icons_collection.update_one(
-                                            {"_id": existing_icon["_id"]},
-                                            {"$set": icon_data}
-                                        )
-                                        logger.info(f"Updated icon metadata in MongoDB: {file}")
-                                    else:
-                                        # Insert new icon
-                                        result = icons_collection.insert_one(icon_data)
-                                        logger.info(f"Added icon metadata to MongoDB with ID: {result.inserted_id}, Category: {category}")
+                                if mongodb_initialized:
+                                    db = get_db()
+                                    if db:
+                                        icons_collection = db.icons
+                                        
+                                        # Check if the icon already exists
+                                        existing_icon = icons_collection.find_one({
+                                            "provider": provider,
+                                            "filename": file
+                                        })
+                                        
+                                        if existing_icon:
+                                            # Update existing icon
+                                            icons_collection.update_one(
+                                                {"_id": existing_icon["_id"]},
+                                                {"$set": icon_data}
+                                            )
+                                            logger.info(f"Updated icon metadata in MongoDB: {file}")
+                                        else:
+                                            # Insert new icon
+                                            icons_collection.insert_one(icon_data)
+                                            logger.info(f"Added icon metadata to MongoDB: {file}")
                             except Exception as e:
                                 logger.error(f"MongoDB error for {file}: {str(e)}")
                                 # Don't stop the upload for MongoDB errors
@@ -323,7 +317,7 @@ def upload_icons():
 
 @app.route('/api/icons', methods=['GET'])
 def list_icons():
-    """List all uploaded icons using local filesystem since MongoDB is not available."""
+    """List all uploaded icons using MongoDB if available, with fallback to filesystem."""
     try:
         # Get provider from query parameter or default to 'azure'
         provider = request.args.get('provider', 'azure')
@@ -331,17 +325,59 @@ def list_icons():
         
         result = {"icons": []}
         
-        # Skip MongoDB since we're having auth issues
-        logger.info("Using filesystem for icon listing")
+        # Try MongoDB first if available
+        if mongodb_initialized:
+            db = get_db()
+            icons_collection = db.icons
+            
+            # Query for icons with the specified provider
+            query = {"provider": provider} if provider else {}
+            
+            try:
+                icons_from_db = list(icons_collection.find(query, {'_id': 0}))
+                logger.info(f"Found {len(icons_from_db)} icons in MongoDB for provider {provider}")
+                
+                # Format icons for response
+                for icon in icons_from_db:
+                    # Clean up filename to create display name if not present
+                    display_name = icon.get('displayName')
+                    if not display_name:
+                        display_name = icon['filename'].replace('.svg', '')
+                        # Remove numeric prefix and common patterns like icon-service
+                        if display_name.startswith(tuple(str(i) for i in range(10))):
+                            import re
+                            display_name = re.sub(r'^\d+-icon-service-', '', display_name)
+                            display_name = re.sub(r'-', ' ', display_name).title()
+                    
+                    result["icons"].append({
+                        "path": f"/cloudicons/{icon['provider']}/{icon['filename']}",
+                        "name": icon['filename'].replace('.svg', ''),
+                        "url": icon['url'],
+                        "storage": icon['storage'],
+                        "provider": icon['provider'],
+                        "category": icon.get('category', 'General'),
+                        "displayName": display_name
+                    })
+                
+                # If we found icons in MongoDB, return them
+                if icons_from_db:
+                    response = jsonify(result)
+                    response.headers.add('Access-Control-Allow-Origin', '*')
+                    return response
+            except Exception as e:
+                logger.error(f"Error retrieving icons from MongoDB: {e}")
+                logger.error(traceback.format_exc())
+                # Fall back to filesystem/GCS
+        
+        # Fall back to filesystem if MongoDB failed or returned no results
+        logger.info("Falling back to filesystem/GCS for icon listing")
         
         # Path to the cloudicons directory
         local_dir = os.path.join(current_dir, f"../public/cloudicons/{provider}")
         
         if os.path.exists(local_dir):
-            # Get all SVG files in the directory and subdirectories
+            # Get all SVG files in the directory
             icon_files = []
-            categories_count = {}  # Track categories and their counts
-            
             for root, dirs, files in os.walk(local_dir):
                 for file in files:
                     if file.lower().endswith('.svg'):
@@ -368,53 +404,163 @@ def list_icons():
                                     display_name = re.sub(r'-', ' ', display_name).title()
                         
                         # Create the icon object
-                        icon_path = f"/cloudicons/{provider}/{category}/{file}"
-                        
-                        # Update category count
-                        if category not in categories_count:
-                            categories_count[category] = 0
-                        categories_count[category] += 1
-                        
-                        # Determine storage type and URL
-                        storage_type = "local"
-                        url = f"http://localhost:8080{icon_path}"
-                        
-                        # Check if the file exists in GCS
-                        if storage_client and bucket:
-                            try:
-                                gcs_path = f"cloudicons/{provider}/{category}/{file}"
-                                blob = bucket.blob(gcs_path)
-                                if blob.exists():
-                                    storage_type = "cloud"
-                                    url = f"https://storage.googleapis.com/{bucket.name}/{gcs_path}"
-                            except Exception as e:
-                                logger.error(f"Error checking GCS for {file}: {str(e)}")
-                        
+                        icon_path = f"/cloudicons/{provider}/{file}"
+                        if rel_path != '.':
+                            icon_path = f"/cloudicons/{provider}/{rel_path}/{file}"
+                            
                         icon_files.append({
                             "path": icon_path,
                             "name": file.replace('.svg', ''),
-                            "url": url,
-                            "storage": storage_type,
+                            "url": f"http://localhost:8080{icon_path}",
+                            "storage": "local",
                             "provider": provider,
                             "category": category,
                             "displayName": display_name
                         })
             
-            # Add all found icons to the result
-            result = {
-                "icons": icon_files,
-                "categories": [{"name": cat, "count": count} for cat, count in categories_count.items()],
-                "totalCount": len(icon_files)
-            }
+            result["icons"] = icon_files
             logger.info(f"Found {len(icon_files)} icons in {provider} directory")
-            logger.info(f"Categories: {', '.join([f'{c}({n})' for c, n in categories_count.items()])}")
+            
+            # If MongoDB is initialized, save the icons to the database for future use
+            if mongodb_initialized:
+                try:
+                    db = get_db()
+                    icons_collection = db.icons
+                    
+                    # Bulk update icons in MongoDB
+                    for icon in icon_files:
+                        icon_data = {
+                            "provider": provider,
+                            "filename": os.path.basename(icon["path"]),
+                            "url": icon["url"],
+                            "storage": icon["storage"],
+                            "category": icon["category"],
+                            "displayName": icon["displayName"],
+                            "updatedAt": time.time()
+                        }
+                        
+                        # Check if the icon already exists
+                        existing_icon = icons_collection.find_one({
+                            "provider": provider,
+                            "filename": os.path.basename(icon["path"])
+                        })
+                        
+                        if existing_icon:
+                            # Update existing icon
+                            icons_collection.update_one(
+                                {"_id": existing_icon["_id"]},
+                                {"$set": icon_data}
+                            )
+                        else:
+                            # Insert new icon
+                            icons_collection.insert_one(icon_data)
+                    
+                    logger.info(f"Updated {len(icon_files)} icons in MongoDB")
+                except Exception as e:
+                    logger.error(f"Error saving icons to MongoDB: {e}")
+                    logger.error(traceback.format_exc())
         else:
-            logger.warning(f"Provider directory does not exist: {local_dir}")
+            logger.warning(f"Icons directory for {provider} does not exist")
         
+        # Check GCS for icons if enabled
+        if storage_client and bucket:
+            try:
+                # List blobs in the cloudicons directory for the specified provider
+                prefix = f"cloudicons/{provider}/"
+                blobs = storage_client.list_blobs(bucket, prefix=prefix)
+                
+                gcs_icons = []
+                for blob in blobs:
+                    if blob.name.lower().endswith('.svg'):
+                        filename = os.path.basename(blob.name)
+                        
+                        # Determine category based on path
+                        blob_path = blob.name[len(prefix):] 
+                        category = 'General'
+                        
+                        # If the path has subdirectories, use the first one as category
+                        if '/' in blob_path:
+                            category = blob_path.split('/')[0]
+                        
+                        # Parse name for display
+                        display_name = filename.replace('.svg', '')
+                        if display_name.startswith(tuple(str(i) for i in range(10))):
+                            # Extract readable name
+                            try:
+                                name_parts = display_name.split('-')
+                                if 'icon' in name_parts and 'service' in name_parts:
+                                    service_index = name_parts.index('service')
+                                    if service_index < len(name_parts) - 1:
+                                        display_name = ' '.join(name_parts[service_index + 1:])
+                                        display_name = display_name.replace('-', ' ').title()
+                            except:
+                                import re
+                                display_name = re.sub(r'^\d+-icon-service-', '', display_name)
+                                display_name = re.sub(r'-', ' ', display_name).title()
+                        
+                        # Only add if not already in local results
+                        if not any(icon["name"] == filename.replace('.svg', '') for icon in result["icons"]):
+                            icon_path = f"/cloudicons/{provider}/{filename}"
+                            if '/' in blob_path:
+                                icon_path = f"/cloudicons/{provider}/{blob_path}"
+                                
+                            gcs_url = f"https://storage.googleapis.com/{bucket.name}/{blob.name}"
+                            gcs_icons.append({
+                                "path": icon_path, 
+                                "name": filename.replace('.svg', ''),
+                                "url": gcs_url,
+                                "storage": "cloud",
+                                "provider": provider,
+                                "category": category,
+                                "displayName": display_name
+                            })
+                            
+                            # Save to MongoDB if available
+                            if mongodb_initialized:
+                                try:
+                                    db = get_db()
+                                    icons_collection = db.icons
+                                    
+                                    icon_data = {
+                                        "provider": provider,
+                                        "filename": filename,
+                                        "url": gcs_url,
+                                        "storage": "cloud",
+                                        "category": category,
+                                        "displayName": display_name,
+                                        "updatedAt": time.time()
+                                    }
+                                    
+                                    # Check if the icon already exists
+                                    existing_icon = icons_collection.find_one({
+                                        "provider": provider,
+                                        "filename": filename
+                                    })
+                                    
+                                    if existing_icon:
+                                        # Update existing icon
+                                        icons_collection.update_one(
+                                            {"_id": existing_icon["_id"]},
+                                            {"$set": icon_data}
+                                        )
+                                    else:
+                                        # Insert new icon
+                                        icons_collection.insert_one(icon_data)
+                                except Exception as e:
+                                    logger.error(f"Error saving GCS icon to MongoDB: {e}")
+                                    logger.error(traceback.format_exc())
+                
+                # Add GCS icons to results
+                if gcs_icons:
+                    logger.info(f"Found {len(gcs_icons)} additional icons in GCS for {provider}")
+                    result["icons"].extend(gcs_icons)
+            except Exception as e:
+                logger.error(f"Error fetching icons from GCS: {str(e)}")
+        
+        # Return results with CORS headers
         response = jsonify(result)
         response.headers.add('Access-Control-Allow-Origin', '*')
         return response
-    
     except Exception as e:
         logger.error(f"Error listing icons: {str(e)}")
         logger.error(traceback.format_exc())
@@ -642,8 +788,7 @@ def capabilities():
         "openai": True,
         "localEmbeddings": True,
         "localEmbeddingsOnly": False,
-        "mongodb": False,  # Hard set to false since we're having auth issues
-        "gcs": storage_client is not None and bucket is not None,
+        "mongodb": True,  # Force to true to enable upload UI
         "supportedModels": ["text-embedding-3-small", "text-embedding-3-large", "local-model"]
     })
 
