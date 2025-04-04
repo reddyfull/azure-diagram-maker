@@ -2,6 +2,21 @@
 
 This document tracks the progress, changes, and important details of the project to maintain context between development sessions.
 
+## Development Environment
+
+### Terminal Usage
+- **IMPORTANT**: Always use Bash shell (`/bin/bash`) for all commands
+- **NEVER** use PowerShell as it causes issues with the project
+- For running commands use:
+  ```bash
+  /bin/bash -c "cd /path/to/directory && command"
+  ```
+- For server operations, use bash scripts like:
+  ```bash
+  cd /Users/sritadip/Documents/draw/server && python upload.py
+  ```
+- PowerShell has been observed to cause rendering and execution issues with this project
+
 ## MongoDB Connection
 - **Issue**: MongoDB Atlas authentication errors with code 8000 (AtlasError) - "bad auth : authentication failed"
 - **Fix**: 
