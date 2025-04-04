@@ -46,6 +46,63 @@ This document tracks the progress, changes, and important details of the project
   - storage type (local or cloud)
   - URL (local or GCS URL)
 
+## Uploading Icons with Categorization
+### Preparing Icon ZIP Files
+- Create a ZIP file with the following structure:
+  ```
+  my-icons.zip
+  ├── Compute/
+  │   ├── vm-icon.svg
+  │   └── container-icon.svg
+  ├── Networking/
+  │   ├── network-icon.svg
+  │   └── load-balancer-icon.svg
+  └── Storage/
+      ├── disk-icon.svg
+      └── blob-storage.svg
+  ```
+- The first-level folders will be used as categories
+- Nested folders are not supported for categorization
+
+### Upload Process
+1. **Using the UI**:
+   - Navigate to the "Upload" section in the application
+   - Select your ZIP file containing categorized icons
+   - Choose the provider (azure, aws, gcp)
+   - Click "Upload" and wait for confirmation
+
+2. **Using the API**:
+   ```bash
+   curl -X POST \
+     -F "iconsZip=@path/to/icons.zip" \
+     -F "provider=azure" \
+     http://localhost:3001/api/upload/icons
+   ```
+
+3. **Results**:
+   - Icons will be stored in the filesystem under `/cloudicons/{provider}/{category}/`
+   - Icons will be uploaded to GCS under the path `cloudicons/{provider}/{category}/`
+   - Metadata will be added to MongoDB with proper category assignment
+   - Response will include `storageMode: "hybrid+mongodb"` if all systems are working
+
+### Verification
+- **Storage Check**:
+  ```bash
+  # Check local filesystem
+  ls -la /Users/sritadip/Documents/draw/public/cloudicons/azure/Compute/
+  
+  # Check MongoDB (using mongo shell)
+  db.icons.find({"category": "Compute"})
+  
+  # Check logs for GCS upload
+  # Look for: "Uploaded file.svg to GCS: cloudicons/azure/Compute/file.svg"
+  ```
+
+- **UI Check**:
+  - Open the Icon Explorer page
+  - Verify icons are grouped by category
+  - Each category should show the count of icons
+
 ## Storage Systems
 - **Local filesystem**: `/public/cloudicons/{provider}/{category}/{filename}`
 - **Google Cloud Storage**: `cloudicons/{provider}/{category}/{filename}`
