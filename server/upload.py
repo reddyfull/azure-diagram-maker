@@ -32,11 +32,11 @@ mongo_db = None
 
 # Initialize MongoDB
 try:
-    from mongodb_client import get_db
+    from mongodb_client import get_db, mongodb_initialized
     
     # Try to get the database connection
     mongo_db = get_db()
-    if mongo_db:
+    if mongo_db is not None:
         mongodb_initialized = True
         logger.info("Successfully connected to MongoDB using client module")
     else:
@@ -46,8 +46,9 @@ try:
             from pymongo import MongoClient
             from pymongo.server_api import ServerApi
             
+            # Note: The @ in the password needs to be URL encoded as %40
             mongo_client = MongoClient(
-                "mongodb+srv://srinisona:SaiKalika1209@sridraw.rpkmj.mongodb.net/?retryWrites=true&w=majority&appName=sridraw",
+                "mongodb+srv://srinisona:SaiKalika%401209@sridraw.rpkmj.mongodb.net/?retryWrites=true&w=majority&appName=sridraw",
                 server_api=ServerApi('1')
             )
             mongo_client.admin.command('ping')
@@ -169,8 +170,8 @@ def serve_cloudicon(filename):
 def upload_icons():
     """Upload icons from a ZIP file"""
     try:
-        # Set MongoDB available flag (we're now forcing this to True to make UI work)
-        mongodb_available = True
+        # Set MongoDB available flag
+        mongodb_available = mongodb_initialized and mongo_db is not None
         uploaded_files = []
         errors = []
         
@@ -272,7 +273,7 @@ def upload_icons():
                             
                             # Try to save to MongoDB if available
                             try:
-                                if mongodb_initialized and mongo_db:
+                                if mongodb_initialized and mongo_db is not None:
                                     icons_collection = mongo_db.icons
                                     
                                     # Check if the icon already exists
@@ -303,7 +304,7 @@ def upload_icons():
             
             # Return the response
             storage_mode = "hybrid" if storage_client and bucket else "local"
-            if mongodb_initialized:
+            if mongodb_initialized and mongo_db is not None:
                 storage_mode += "+mongodb"
                 
             response = {
@@ -642,7 +643,7 @@ def capabilities():
         "openai": True,
         "localEmbeddings": True,
         "localEmbeddingsOnly": False,
-        "mongodb": False,  # Hard set to false since we're having auth issues
+        "mongodb": mongodb_initialized and mongo_db is not None,
         "gcs": storage_client is not None and bucket is not None,
         "supportedModels": ["text-embedding-3-small", "text-embedding-3-large", "local-model"]
     })
@@ -655,10 +656,10 @@ def delete_all_icons():
         error_count = 0
         
         # Delete from MongoDB if available
-        if mongodb_initialized:
+        if mongodb_initialized and mongo_db is not None:
             try:
                 db = get_db()
-                if db:
+                if db is not None:
                     # Get count before deleting
                     count = db.icons.count_documents({})
                     # Delete all documents
