@@ -124,6 +124,7 @@ This document tracks the progress, changes, and important details of the project
 - (Apr 3) Enhanced the API to return category metadata with icon counts
 - (Apr 3) Improved error handling for database operations
 - (Apr 3) Fixed boolean checks on database objects to prevent Python errors
+- (Apr 5) Corrected Vite proxy configuration to target backend port 3001
 
 ## Frontend Components
 - **IconExplorer**: Updated to display icons grouped by category with filtering
@@ -200,6 +201,10 @@ This document tracks the progress, changes, and important details of the project
   - Check network requests for 404 errors on icon paths
   - Verify that category directories exist in filesystem
   - Ensure icons are organized in correct folder structure
+- **Vite Proxy Errors (`ECONNREFUSED`)**:
+  - Check that the backend server is running.
+  - Verify the `proxy.target` in `vite.config.ts` matches the backend server port (e.g., 3001).
+  - Restart Vite after changing `vite.config.ts`.
 - **GCS Issues**:
   - Check GCS credentials in gcs-key.json
   - Verify bucket permissions and access
