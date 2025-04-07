@@ -135,6 +135,16 @@ This document tracks the progress, changes, and important details of the project
 - (Apr 3) Improved error handling for database operations
 - (Apr 3) Fixed boolean checks on database objects to prevent Python errors
 
+## Supabase to MongoDB Migration
+- **Status**: In progress (Apr 5, 2025)
+- **Goal**: Remove all Supabase dependencies and use MongoDB exclusively
+- **Completed Steps**:
+  - Created a stub for Supabase client that returns empty results and logs warnings
+  - Updated hooks and components to use MongoDB API endpoints instead of Supabase
+  - Modified UI to reference MongoDB connection status instead of Supabase
+  - Transitioned diagram persistence to use MongoDB exclusively
+  - Updated icon storage to fully leverage Google Cloud Storage
+
 ## Frontend Components
 - **IconExplorer**: Updated to display icons grouped by category with filtering
 - **CloudResourcePanel**: Shows available icons for adding to diagrams

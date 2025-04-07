@@ -276,6 +276,10 @@ def upload_icons():
                                 if mongodb_initialized and mongo_db is not None:
                                     icons_collection = mongo_db.icons
                                     
+                                    # Prepare data for MongoDB (exclude _id if inserting)
+                                    mongo_icon_data = icon_data.copy()
+                                    mongo_icon_data.pop('_id', None) # Remove _id if it somehow exists
+
                                     # Check if the icon already exists
                                     existing_icon = icons_collection.find_one({
                                         "provider": provider,
@@ -284,15 +288,19 @@ def upload_icons():
                                     
                                     if existing_icon:
                                         # Update existing icon
-                                        icons_collection.update_one(
+                                        update_result = icons_collection.update_one(
                                             {"_id": existing_icon["_id"]},
-                                            {"$set": icon_data}
+                                            {"$set": mongo_icon_data}
                                         )
                                         logger.info(f"Updated icon metadata in MongoDB: {file}")
+                                        # Use existing icon's ID for the response data
+                                        icon_data['_id'] = str(existing_icon['_id'])
                                     else:
                                         # Insert new icon
-                                        result = icons_collection.insert_one(icon_data)
-                                        logger.info(f"Added icon metadata to MongoDB with ID: {result.inserted_id}, Category: {category}")
+                                        insert_result = icons_collection.insert_one(mongo_icon_data)
+                                        logger.info(f"Added icon metadata to MongoDB with ID: {insert_result.inserted_id}, Category: {category}")
+                                        # Add the string representation of the new ID to the response data
+                                        icon_data['_id'] = str(insert_result.inserted_id)
                             except Exception as e:
                                 logger.error(f"MongoDB error for {file}: {str(e)}")
                                 # Don't stop the upload for MongoDB errors
