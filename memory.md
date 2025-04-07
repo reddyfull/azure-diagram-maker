@@ -7,6 +7,8 @@ This document tracks the progress, changes, and important details of the project
 ### Terminal Usage
 - **IMPORTANT**: Always use Bash shell (`/bin/bash`) for all commands
 - **NEVER** use PowerShell as it causes issues with the project
+  - PowerShell has shown consistent "Cannot locate the offset in the rendered text" errors
+  - These errors appear to be related to PSReadLine and render the terminal unusable
 - For running commands use:
   ```bash
   /bin/bash -c "cd /path/to/directory && command"
