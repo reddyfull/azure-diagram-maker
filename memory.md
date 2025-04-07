@@ -121,6 +121,9 @@ This document tracks the progress, changes, and important details of the project
 - `/api/health` - Health check endpoint
 
 ## Recent Changes
+- (Apr 7) Enhanced icon fallback system to better use embedded SVGs when icon files don't exist
+- (Apr 7) Simplified IconDisplay component to prioritize embedded fallbacks for missing icons
+- (Apr 7) Updated CloudResourcePanel to always enable embedded fallbacks for all icons
 - (Apr 5) Fixed React warning about nested buttons in IconGroup component
 - (Apr 5) Fixed API configuration to consistently use port 3001 for all endpoints
 - (Apr 5) Updated icon paths to properly include categories in their structure
@@ -212,6 +215,18 @@ This document tracks the progress, changes, and important details of the project
   - Check that icons are uploaded to the correct category paths
   - Icons must be SVG format for proper rendering
   - The app has built-in fallbacks for missing icons using embedded SVGs
+  - If seeing CORS errors when loading from GCS, check that the bucket has proper CORS headers
+  - When using GCS for icons, ensure CORS is configured with:
+    ```json
+    [
+      {
+        "origin": ["http://localhost:8080", "https://yourdomain.com"],
+        "method": ["GET"],
+        "responseHeader": ["Content-Type"],
+        "maxAgeSeconds": 3600
+      }
+    ]
+    ```
 - **Vite Proxy Errors (`ECONNREFUSED`)**:
   - Check if backend server is actually running (`ps aux | grep upload.py`)
   - Verify the `proxy.target` in `vite.config.ts` points to `http://localhost:3001`
