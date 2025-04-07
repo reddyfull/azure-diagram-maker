@@ -119,12 +119,16 @@ This document tracks the progress, changes, and important details of the project
 - `/api/health` - Health check endpoint
 
 ## Recent Changes
+- (Apr 5) Fixed React warning about nested buttons in IconGroup component
+- (Apr 5) Fixed API configuration to consistently use port 3001 for all endpoints
+- (Apr 5) Updated icon paths to properly include categories in their structure
+- (Apr 5) Enhanced icon error handling to provide better fallbacks when icons are missing
+- (Apr 5) Corrected Vite proxy configuration to target backend port 3001
 - (Apr 3) Fixed MongoDB Atlas authentication by properly encoding special characters in password
 - (Apr 3) Added better category display in IconExplorer component with category filter buttons
 - (Apr 3) Enhanced the API to return category metadata with icon counts
 - (Apr 3) Improved error handling for database operations
 - (Apr 3) Fixed boolean checks on database objects to prevent Python errors
-- (Apr 5) Corrected Vite proxy configuration to target backend port 3001
 
 ## Frontend Components
 - **IconExplorer**: Updated to display icons grouped by category with filtering
@@ -201,10 +205,19 @@ This document tracks the progress, changes, and important details of the project
   - Check network requests for 404 errors on icon paths
   - Verify that category directories exist in filesystem
   - Ensure icons are organized in correct folder structure
+  - Check the IconDisplay component's error handling flow
+  - Common path structure: `/cloudicons/{provider}/{category}/{filename}`
+  - Check that icons are uploaded to the correct category paths
+  - Icons must be SVG format for proper rendering
+  - The app has built-in fallbacks for missing icons using embedded SVGs
 - **Vite Proxy Errors (`ECONNREFUSED`)**:
-  - Check that the backend server is running.
-  - Verify the `proxy.target` in `vite.config.ts` matches the backend server port (e.g., 3001).
-  - Restart Vite after changing `vite.config.ts`.
+  - Check if backend server is actually running (`ps aux | grep upload.py`)
+  - Verify the `proxy.target` in `vite.config.ts` points to `http://localhost:3001`
+  - Restart Vite after making changes to the configuration
+- **React Nesting Warnings**:
+  - If you see `validateDOMNesting` warnings, check for incorrectly nested elements
+  - Common issue: nested `<button>` elements, which is not allowed in HTML
+  - Fix by restructuring components to avoid invalid nesting
 - **GCS Issues**:
   - Check GCS credentials in gcs-key.json
   - Verify bucket permissions and access
